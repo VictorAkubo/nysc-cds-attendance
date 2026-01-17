@@ -1,0 +1,142 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+  <meta charset="UTF-8">  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+  <title>NYSC Admin - Manage Members</title>  
+  <style>  
+    /* General reset */  
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }  
+  
+    body { background: #f4f7fa; padding: 20px; color: #333; display:flex; flex-direction:column; gap:18px;}  
+  
+    h1 { text-align: center; margin-bottom: 30px; font-size: 2.2em; color: #2e7d32; }  
+  
+    /* Form styling */  
+    .form-container { max-width: 500px; margin: 0 auto 30px auto; background: #fff; padding: 25px 30px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }  
+    .form-container h3 { margin-bottom: 20px; color: #2e7d32; }  
+    label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }  
+    input, select { width: 100%; padding: 12px 15px; margin-bottom: 20px; border-radius: 10px; border: 1px solid #ccc; font-size: 1em; outline: none; transition: 0.3s; }  
+    input:focus, select:focus { border-color: #2e7d32; box-shadow: 0 0 8px rgba(46,125,50,0.3); }  
+    button { padding: 12px 20px; background: #2e7d32; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-size: 1em; font-weight: 600; transition: 0.3s; }  
+    button:hover { background: #1b5e20; transform: scale(1.05); }  
+  
+    /* Table styling */  
+    .table-container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); overflow-x: auto; }  
+    table { width: 100%; border-collapse: collapse; min-width: 600px; }  
+    th, td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #ddd; font-size: 0.95em; }  
+    th { background: #2e7d32; color: #fff; font-weight: 700; }  
+    tbody tr:nth-child(even) { background: #f9f9f9; }  
+    tbody tr:hover { background: #d0f0c0; }  
+    .delete-btn { background: #f44336; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; transition: 0.3s; }  
+    .delete-btn:hover { background: #b71c1c; transform: scale(1.05); }  
+  
+    /* Responsive */  
+    @media (max-width: 768px) { .form-container { padding: 20px; } input, select { font-size: 0.95em; } table { font-size: 0.85em; } }  
+    .navbar { background-color: #333; color: white; padding: 10px 20px; cursor: pointer; display: flex; align-items:center; justify-content:center; border-radius: 5px; transition: background-color 0.3s; }  
+    .navbar:hover { background-color: #555; }  
+    @media (max-width: 480px) { h1 { font-size: 1.8em; } button { width: 100%; } input, select { font-size: 0.9em; } th, td { padding: 10px; } }  
+  </style>  
+</head>  
+<body>  
+  <div class="navbar" onclick="window.location.href='./index.html'">  
+    Go to Attendance  
+  </div>  
+  
+  <h1>NYSC Admin - Manage Members</h1>  
+  
+  <!-- Add Member Form -->  
+  <div class="form-container">  
+    <h3>Add New Member</h3>  
+    <label for="memberName">Name</label>  
+    <input type="text" id="memberName" placeholder="Enter member name" required>  
+  
+    <label for="memberBatch">Batch</label>  
+    <input type="text" id="memberBatch" placeholder="Enter batch (e.g., A2)" required>  
+  
+    <label for="memberYear">Year</label>  
+    <input type="number" id="memberYear" placeholder="Enter year (e.g., 2025)" required>  
+
+    <label for="memberState">State Code</label>  
+    <input type="text" id="memberState" placeholder="Enter state code (e.g., EB/25A)" required>  
+  
+    <button onclick="addMember()">Add Member</button>  
+  </div>  
+  
+  <!-- Members Table -->  
+  <div class="table-container">  
+    <h3>NYSC Members List</h3>  
+    <table id="membersTable">  
+      <thead>  
+        <tr>  
+          <th>Name</th>  
+          <th>Batch</th>  
+          <th>Year</th>  
+          <th>State Code</th>  
+          <th>Action</th>  
+        </tr>  
+      </thead>  
+      <tbody>  
+        <!-- Members dynamically inserted here -->  
+      </tbody>  
+    </table>  
+  </div>  
+  
+  <script>  
+    // Load members from localStorage or initialize  
+    let members = JSON.parse(localStorage.getItem('nyscMembers')) || [];  
+  
+    // Render members table  
+    function renderMembers() {  
+      const tbody = document.querySelector('#membersTable tbody');  
+      tbody.innerHTML = '';  
+      members.forEach((member, index) => {  
+        const row = document.createElement('tr');  
+        row.innerHTML = `  
+          <td>${member.name}</td>  
+          <td>${member.batch}</td>  
+          <td>${member.year}</td>  
+          <td>${member.state}</td>  
+          <td><button class="delete-btn" onclick="deleteMember(${index})">Delete</button></td>  
+        `;  
+        tbody.appendChild(row);  
+      });  
+    }  
+  
+    // Add new member  
+    function addMember() {  
+      const name = document.getElementById('memberName').value.trim();  
+      const batch = document.getElementById('memberBatch').value.trim();  
+      const year = document.getElementById('memberYear').value.trim();  
+      const state = document.getElementById('memberState').value.trim();  
+  
+      if(!name || !batch || !year || !state) {  
+        alert('Please fill all fields');  
+        return;  
+      }  
+  
+      members.push({ name, batch, year, state });  
+      localStorage.setItem('nyscMembers', JSON.stringify(members));  
+      renderMembers();  
+  
+      // Clear inputs  
+      document.getElementById('memberName').value = '';  
+      document.getElementById('memberBatch').value = '';  
+      document.getElementById('memberYear').value = '';  
+      document.getElementById('memberState').value = '';  
+    }  
+  
+    // Delete member  
+    function deleteMember(index) {  
+      if(confirm(`Are you sure you want to delete ${members[index].name}?`)) {  
+        members.splice(index, 1);  
+        localStorage.setItem('nyscMembers', JSON.stringify(members));  
+        renderMembers();  
+      }  
+    }  
+  
+    // Initial render  
+    renderMembers();  
+  </script>  
+</body>  
+</html>
