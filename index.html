@@ -195,7 +195,7 @@
     const tbody = document.querySelector('#attendanceTable tbody');  
     tbody.innerHTML = '';  
   
-    members.forEach(member => {  
+    members.sort((a,b)=>a.year - b.year).forEach(member => {  
       const checked = savedData[member.name] ? 'checked' : '';  
       const row = document.createElement('tr');  
       row.innerHTML = `  
