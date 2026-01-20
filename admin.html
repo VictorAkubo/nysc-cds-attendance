@@ -90,7 +90,7 @@
     function renderMembers() {  
       const tbody = document.querySelector('#membersTable tbody');  
       tbody.innerHTML = '';  
-      members.forEach((member, index) => {  
+      members.sort((a,b)=>a.year-b.year).forEach((member, index) => {  
         const row = document.createElement('tr');  
         row.innerHTML = `  
           <td>${member.name}</td>  
