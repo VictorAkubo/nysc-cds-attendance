@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NYSC Admin - Manage Members</title>
+  <title>NYSC Admin - Manage Members & Attendance</title>
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -149,37 +149,42 @@
 
 <body>
 
-  <div class="navbar" onclick="window.location.href='./index.html'">
-    Go to Attendance
+  <div class="navbar" onclick="window.location.href='./attendance.html'">
+    Go to Attendance Dashboard
   </div>
 
-  <h1>NYSC Admin - Manage Members</h1>
+  <h1>NYSC Admin - Manage Members & Attendance</h1>
 
+  <!-- Add Member Form -->
   <div class="form-container">
     <h3>Add New Member</h3>
-
     <label>Name</label>
     <input type="text" id="memberName" placeholder="Enter member name">
-
     <label>Batch</label>
     <input type="text" id="memberBatch" placeholder="Enter batch (e.g., A2)">
-
     <label>Year</label>
     <input type="number" id="memberYear" placeholder="Enter year (e.g., 2025)">
-
     <label>State Code</label>
     <input type="text" id="memberState" placeholder="Enter state code (e.g., EB/25A)">
-
     <button onclick="addMember()">Add Member</button>
   </div>
 
+  <!-- Export / Import -->
   <div class="form-container">
-    <h3>Export / Import Members</h3>
+    <h3>Export / Import Members & Attendance</h3>
+    
+    <!-- Members -->
     <button onclick="exportMembers()">Export Members</button>
-    <button onclick="document.getElementById('importFile').click()">Import Members</button>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importMembers(event)">
+    <button onclick="document.getElementById('importFileMembers').click()">Import Members</button>
+    <input type="file" id="importFileMembers" accept=".json" style="display:none" onchange="importMembers(event)">
+    
+    <!-- Attendance -->
+    <button onclick="exportAttendance()">Export Attendance</button>
+    <button onclick="document.getElementById('importFileAttendance').click()">Import Attendance</button>
+    <input type="file" id="importFileAttendance" accept=".json" style="display:none" onchange="importAttendance(event)">
   </div>
 
+  <!-- Members Table -->
   <div class="table-container">
     <h3>NYSC Members List</h3>
     <table id="membersTable">
@@ -197,29 +202,22 @@
   </div>
 
   <script>
+    // ------------------- MEMBERS -------------------
     let members = JSON.parse(localStorage.getItem('nyscMembers')) || [];
 
     function renderMembers() {
       const tbody = document.querySelector('#membersTable tbody');
       tbody.innerHTML = '';
-
       members
-        .sort((a, b) => {
-          if (a.year !== b.year) return a.year - b.year;
-          return a.batch.localeCompare(b.batch);
-        })
-        .forEach((member, index) => {
+        .sort((a,b) => a.year !== b.year ? a.year - b.year : a.batch.localeCompare(b.batch))
+        .forEach((member,index)=>{
           const row = document.createElement('tr');
           row.innerHTML = `
             <td>${member.name}</td>
             <td>${member.batch}</td>
             <td>${member.year}</td>
             <td>${member.state}</td>
-            <td>
-              <button class="delete-btn" onclick="deleteMember(${index})">
-                Delete
-              </button>
-            </td>
+            <td><button class="delete-btn" onclick="deleteMember(${index})">Delete</button></td>
           `;
           tbody.appendChild(row);
         });
@@ -230,33 +228,27 @@
       const batch = document.getElementById('memberBatch').value.trim().toUpperCase();
       const year = Number(document.getElementById('memberYear').value);
       const state = document.getElementById('memberState').value.trim().toUpperCase();
-
-      if (!name || !batch || !year || !state) {
-        alert('Please fill all fields');
-        return;
-      }
-
-      members.push({ name, batch, year, state });
+      if(!name||!batch||!year||!state){ alert('Please fill all fields'); return; }
+      members.push({name,batch,year,state});
       localStorage.setItem('nyscMembers', JSON.stringify(members));
       renderMembers();
-
-      document.getElementById('memberName').value = '';
-      document.getElementById('memberBatch').value = '';
-      document.getElementById('memberYear').value = '';
-      document.getElementById('memberState').value = '';
+      document.getElementById('memberName').value='';
+      document.getElementById('memberBatch').value='';
+      document.getElementById('memberYear').value='';
+      document.getElementById('memberState').value='';
     }
 
-    function deleteMember(index) {
-      if (confirm(`Delete ${members[index].name}?`)) {
-        members.splice(index, 1);
+    function deleteMember(index){
+      if(confirm(`Delete ${members[index].name}?`)){
+        members.splice(index,1);
         localStorage.setItem('nyscMembers', JSON.stringify(members));
         renderMembers();
       }
     }
 
-    function exportMembers() {
-      const dataStr = JSON.stringify(members, null, 2);
-      const blob = new Blob([dataStr], { type: "application/json" });
+    function exportMembers(){
+      const dataStr = JSON.stringify(members,null,2);
+      const blob = new Blob([dataStr], {type:"application/json"});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -265,22 +257,55 @@
       URL.revokeObjectURL(url);
     }
 
-    function importMembers(event) {
+    function importMembers(event){
       const file = event.target.files[0];
-      if (!file) return;
-
+      if(!file) return;
       const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
+      reader.onload = function(e){
+        try{
           const imported = JSON.parse(e.target.result);
-          if (!Array.isArray(imported)) throw new Error("Invalid file format");
+          if(!Array.isArray(imported)) throw new Error("Invalid format");
           members = imported;
           localStorage.setItem('nyscMembers', JSON.stringify(members));
           renderMembers();
           alert('Members imported successfully!');
-        } catch (err) {
-          alert('Failed to import members: ' + err.message);
+        }catch(err){ alert('Failed to import members: '+err.message); }
+      };
+      reader.readAsText(file);
+    }
+
+    // ------------------- ATTENDANCE -------------------
+    function exportAttendance(){
+      const attendanceData = {};
+      Object.keys(localStorage).forEach(key=>{
+        if(/^\d{4}-\d{2}-\d{2}$/.test(key)){
+          attendanceData[key] = JSON.parse(localStorage.getItem(key));
         }
+      });
+      if(Object.keys(attendanceData).length===0){ alert("No attendance data found"); return; }
+      const dataStr = JSON.stringify(attendanceData,null,2);
+      const blob = new Blob([dataStr], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `nysc_attendance_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importAttendance(event){
+      const file = event.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        try{
+          const imported = JSON.parse(e.target.result);
+          if(typeof imported !== 'object') throw new Error("Invalid format");
+          Object.keys(imported).forEach(dateKey=>{
+            localStorage.setItem(dateKey, JSON.stringify(imported[dateKey]));
+          });
+          alert('Attendance imported successfully!');
+        }catch(err){ alert('Failed to import attendance: '+err.message); }
       };
       reader.readAsText(file);
     }
