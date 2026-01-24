@@ -3,86 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NYSC CDs Attendance Admin Login</title>
+  <title>NYSC Iziogo Attendance - Admin Login</title>
   <style>
-    /* Basic reset */
+    /* Reset & font */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     body {
-      background-color: #f0f2f5;
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      background: linear-gradient(135deg, #4CAF50, #81C784);
+      padding: 10px;
     }
 
     .login-container {
-      padding: 30px 40px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      width: 350px;
+      background: #fff;
+      padding: 40px 30px;
+      border-radius: 15px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+      text-align: center;
+      position: relative;
+    }
+
+    /* Logo */
+    .login-logo {
+      display: block;
+      margin: 0 auto 15px auto;
+      width: 80px;
+      height: 80px;
     }
 
     .login-container h2 {
-      text-align: center;
+      color: #2e7d32;
+      margin-bottom: 10px;
+      font-size: 1.8em;
+    }
+
+    .login-container p.subtitle {
+      color: #555;
+      font-size: 0.9em;
       margin-bottom: 25px;
-      color: #333;
     }
 
     .login-container label {
       display: block;
+      text-align: left;
       margin-bottom: 5px;
-      color: #555;
+      color: #333;
+      font-weight: 500;
     }
 
     .login-container input {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin-bottom: 20px;
       border: 1px solid #ccc;
-      border-radius: 5px;
-      transition: border 0.3s;
+      border-radius: 8px;
+      transition: all 0.3s;
+      font-size: 1em;
     }
 
     .login-container input:focus {
       border-color: #4CAF50;
+      box-shadow: 0 0 8px rgba(76,175,80,0.4);
       outline: none;
     }
 
     .login-container button {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       background-color: #4CAF50;
       border: none;
+      border-radius: 8px;
       color: #fff;
-      font-size: 16px;
-      border-radius: 5px;
+      font-size: 1.1em;
       cursor: pointer;
-      transition: background-color 0.3s;
+      font-weight: 600;
+      transition: all 0.3s;
     }
 
     .login-container button:hover {
-      background-color: #45a049;
+      background-color: #388E3C;
+      transform: scale(1.03);
     }
 
     .error-message {
-      color: red;
-      text-align: center;
+      color: #f44336;
       margin-bottom: 10px;
       display: none;
+      font-weight: 500;
+    }
+
+    .footer-text {
+      margin-top: 15px;
+      font-size: 0.85em;
+      color: #777;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 400px) {
+      .login-container {
+        padding: 30px 20px;
+      }
+      .login-logo {
+        width: 60px;
+        height: 60px;
+      }
     }
   </style>
 </head>
 <body>
 
   <div class="login-container">
+    <!-- Logo / SVG -->
+    <img src="nysclogo.svg" alt="NYSC Logo" class="login-logo">
+
     <h2>Admin Login</h2>
+    <p class="subtitle">NYSC Iziogo CDS Attendance System</p>
+
     <div class="error-message" id="errorMsg">Invalid credentials!</div>
+
     <form id="loginForm">
       <label for="username">Username</label>
       <input type="text" id="username" placeholder="Enter username" required>
@@ -92,26 +140,27 @@
 
       <button type="submit">Login</button>
     </form>
+
+    <div class="footer-text">© NYSC Iziogo</div>
   </div>
 
   <script>
-    // Simple front-end login validation example
     const loginForm = document.getElementById('loginForm');
     const errorMsg = document.getElementById('errorMsg');
 
     loginForm.addEventListener('submit', function(e) {
       e.preventDefault();
 
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
 
       // Simple hardcoded check (replace with backend validation)
       if(username === 'admin' && password === 'password123') {
         alert('Login successful!');
-        // Redirect to dashboard page
         window.location.href = './admin.html';
       } else {
         errorMsg.style.display = 'block';
+        setTimeout(() => { errorMsg.style.display = 'none'; }, 3000);
       }
     });
   </script>
