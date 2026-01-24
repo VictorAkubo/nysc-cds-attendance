@@ -85,6 +85,7 @@
       font-size: 1em;
       font-weight: 600;
       transition: 0.3s;
+      margin-right: 10px;
     }
 
     button:hover {
@@ -141,7 +142,7 @@
 
     @media (max-width: 480px) {
       h1 { font-size: 1.8em; }
-      button { width: 100%; }
+      button { width: 100%; margin-bottom: 10px; }
     }
   </style>
 </head>
@@ -172,6 +173,13 @@
     <button onclick="addMember()">Add Member</button>
   </div>
 
+  <div class="form-container">
+    <h3>Export / Import Members</h3>
+    <button onclick="exportMembers()">Export Members</button>
+    <button onclick="document.getElementById('importFile').click()">Import Members</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importMembers(event)">
+  </div>
+
   <div class="table-container">
     <h3>NYSC Members List</h3>
     <table id="membersTable">
@@ -197,9 +205,7 @@
 
       members
         .sort((a, b) => {
-          if (a.year !== b.year) {
-            return a.year - b.year;
-          }
+          if (a.year !== b.year) return a.year - b.year;
           return a.batch.localeCompare(b.batch);
         })
         .forEach((member, index) => {
@@ -246,6 +252,37 @@
         localStorage.setItem('nyscMembers', JSON.stringify(members));
         renderMembers();
       }
+    }
+
+    function exportMembers() {
+      const dataStr = JSON.stringify(members, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `nysc_members_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importMembers(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!Array.isArray(imported)) throw new Error("Invalid file format");
+          members = imported;
+          localStorage.setItem('nyscMembers', JSON.stringify(members));
+          renderMembers();
+          alert('Members imported successfully!');
+        } catch (err) {
+          alert('Failed to import members: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
     }
 
     renderMembers();
